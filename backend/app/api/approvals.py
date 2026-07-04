@@ -82,3 +82,14 @@ async def review_approval(approval_id: str, payload: ApprovalActionRequest):
         "status": new_status,
         "action_result": action_result
     }
+
+@router.post("/{approval_id}/approve")
+async def approve_approval(approval_id: str, reviewed_by: str = "admin"):
+    """Approves a pending tool call request."""
+    return await review_approval(approval_id, ApprovalActionRequest(action="approve", reviewed_by=reviewed_by))
+
+@router.post("/{approval_id}/reject")
+async def reject_approval(approval_id: str, reviewed_by: str = "admin"):
+    """Rejects a pending tool call request."""
+    return await review_approval(approval_id, ApprovalActionRequest(action="reject", reviewed_by=reviewed_by))
+

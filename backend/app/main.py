@@ -2,7 +2,7 @@ from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from app.middleware import TenantMiddleware, TraceNestMiddleware
-from app.api import chats, documents, approvals, audit_logs, models, health
+from app.api import chats, documents, approvals, audit_logs, models, health, organizations, rag, mcp, users
 from app.config import settings
 from tracenest import logger
 
@@ -36,7 +36,7 @@ async def global_exception_handler(request: Request, exc: Exception):
     )
 
 # Register Routers (register both with and without '/api' prefix for routing flexibility)
-for router_module in [chats, documents, approvals, audit_logs, models, health]:
+for router_module in [chats, documents, approvals, audit_logs, models, health, organizations, rag, mcp, users]:
     app.include_router(router_module.router, prefix="/api")
     app.include_router(router_module.router)
 

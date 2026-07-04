@@ -10,7 +10,7 @@ import time
 import json
 import uuid
 
-router = APIRouter(prefix="/chats", tags=["Chats"])
+router = APIRouter(tags=["Chats"])
 
 class MessageModel(BaseModel):
     role: str # "user", "assistant", "system"
@@ -21,7 +21,8 @@ class ChatRequest(BaseModel):
     messages: List[MessageModel]
     use_rag: bool = True
 
-@router.post("")
+@router.post("/chat")
+@router.post("/chats")
 async def chat_interaction(payload: ChatRequest):
     """Processes chat request with RAG retrieval, MCP verification, and multi-model fallback."""
     slug = get_tenant_slug()
@@ -142,7 +143,17 @@ async def chat_interaction(payload: ChatRequest):
         "latency": llm_response["latency"]
     }
 
-@router.get("/{session_id}")
+@router.get("/chat/sessions")
+@router.get("/chats/sessions")
+async def list_chat_sessions():
+    """Lists unique chat session IDs for the current tenant."""
+    slug = get_tenant_slug()
+    db = get_db()
+    sessions = await db.chats.distinct("session_id", {"tenant_id": slug})
+    return {"sessions": sessions}
+
+@router.get("/chat/{session_id}")
+@router.get("/chats/{session_id}")
 async def get_chat_history(session_id: str):
     """Retrieves chat history for a session."""
     slug = get_tenant_slug()
