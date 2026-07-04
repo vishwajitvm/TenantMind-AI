@@ -58,7 +58,7 @@ class MCPGateway:
         else:
             status = "pending"
             approval_id = str(uuid.uuid4())
-            logger.warn(f"MCP Tool Requires Approval | Tenant: {tenant_id} | Tool: {tool_name} | Risk: {risk_level}")
+            logger.warning(f"MCP Tool Requires Approval | Tenant: {tenant_id} | Tool: {tool_name} | Risk: {risk_level}")
             
         approval_doc = {
             "approval_id": approval_id,

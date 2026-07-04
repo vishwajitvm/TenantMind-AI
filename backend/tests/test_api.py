@@ -43,26 +43,28 @@ async def test_audit_logs_endpoint(mock_mongo):
 async def test_approvals_endpoints(mock_mongo):
     _, db = mock_mongo
     
-    # Mock find list
-    mock_cursor = MagicMock()
-    async def mock_to_list(*args, **kwargs):
-        return []
-    
-    mock_cursor.sort.return_value = mock_cursor
-    
-    # Define an async generator to mock db.mcp_approvals.find().sort()
-    async def mock_async_gen():
-        yield {
-            "approval_id": "app-123",
-            "tenant_id": "acme",
-            "tool_name": "run_cmd",
-            "arguments": {},
-            "risk_level": "high",
-            "status": "pending",
-            "created_at": 12345.0
-        }
-    
-    db.mcp_approvals.find.return_value = mock_async_gen()
+    class MockCursor:
+        def __init__(self, items):
+            self.items = items
+        def sort(self, *args, **kwargs):
+            return self
+        def __aiter__(self):
+            return self
+        async def __anext__(self):
+            if not self.items:
+                raise StopAsyncIteration
+            return self.items.pop(0)
+            
+    db.mcp_approvals.find.return_value = MockCursor([{
+        "_id": "mock_id",
+        "approval_id": "app-123",
+        "tenant_id": "acme",
+        "tool_name": "run_cmd",
+        "arguments": {},
+        "risk_level": "high",
+        "status": "pending",
+        "created_at": 12345.0
+    }])
     db.mcp_approvals.find_one.return_value = {
         "approval_id": "app-123",
         "tenant_id": "acme",
@@ -148,7 +150,8 @@ async def test_chat_interaction_endpoint(mock_mongo, mock_qdrant):
 async def test_chat_interaction_mcp_tool_invocation(mock_mongo):
     _, db = mock_mongo
     
-    with patch("app.api.chats.get_db", return_value=db):
+    with patch("app.api.chats.get_db", return_value=db), \
+         patch("app.gateways.mcp_gateway.get_db", return_value=db):
         # Trigger an MCP tool call format
         payload = {
             "messages": [

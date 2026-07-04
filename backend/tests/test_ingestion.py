@@ -1,6 +1,7 @@
 import pytest
 from unittest.mock import patch, MagicMock
 from app.ingestion.extractor import DocumentExtractor
+from app.database import tenant_context
 
 def test_secret_scanner():
     aws_text = "Here is my key: AKIA1234567890ABCDEF. Keep it safe!"
@@ -53,13 +54,13 @@ def test_docx_xml_parser():
 
 @pytest.mark.asyncio
 async def test_extract_and_index(mock_qdrant):
-    with patch("app.ingestion.extractor.get_qdrant_client", return_value=mock_qdrant):
-        # We mock tenant context to return test_tenant
-        with patch("app.ingestion.extractor.get_tenant_slug", return_value="acme-corp"):
-            text_bytes = b"Hello world. This is a simple text file."
-            res = await DocumentExtractor.extract_and_index("test.txt", text_bytes)
-            
-            assert res["status"] == "success"
-            assert res["collection_name"] == "org_acme_corp_vectors"
-            assert mock_qdrant.upsert.called
-            assert mock_qdrant.create_collection.called
+    with patch("app.ingestion.extractor.get_qdrant_client", return_value=mock_qdrant), \
+         patch("app.database.get_qdrant_client", return_value=mock_qdrant):
+        tenant_context.set("acme-corp")
+        text_bytes = b"Hello world. This is a simple text file."
+        res = await DocumentExtractor.extract_and_index("test.txt", text_bytes)
+        
+        assert res["status"] == "success"
+        assert res["collection_name"] == "org_acme_corp_vectors"
+        assert mock_qdrant.upsert.called
+        assert mock_qdrant.create_collection.called

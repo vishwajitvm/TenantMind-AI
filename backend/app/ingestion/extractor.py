@@ -148,7 +148,7 @@ class DocumentExtractor:
         # 1. Parse text
         text = cls.parse_document(filename, file_bytes)
         if not text.strip():
-            logger.warn(f"Document {filename} was parsed but returned no text.")
+            logger.warning(f"Document {filename} was parsed but returned no text.")
             return {
                 "status": "failed",
                 "reason": "empty_document",
@@ -160,9 +160,9 @@ class DocumentExtractor:
         has_injection = cls.scan_for_injections(text)
         
         if secrets_found:
-            logger.warn(f"Security Alert: Secrets found in uploaded document {filename}: {secrets_found}")
+            logger.warning(f"Security Alert: Secrets found in uploaded document {filename}: {secrets_found}")
         if has_injection:
-            logger.warn(f"Security Alert: Potential prompt injection detected in {filename}")
+            logger.warning(f"Security Alert: Potential prompt injection detected in {filename}")
 
         # 3. Chunk text
         chunks = cls.chunk_text(text)
