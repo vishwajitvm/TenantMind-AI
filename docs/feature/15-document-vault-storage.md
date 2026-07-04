@@ -1,24 +1,38 @@
 # Feature 15: Document Vault Storage
 
-## Layman Guide
-Safe digital cabinet for leases, receipts, and identification.
+## 1. Layman Guide
+A secure digital filing cabinet where tenants and landlords can store and access leases, utility receipts, renter's insurance policies, and identity verifications.
 
-## Technical Guide
-Uploads are stored in MinIO. Access control list verified at FastAPI middleware level.
+---
 
-## Flow
-1. User uploads document.
-2. MinIO storage confirmed.
-3. Record saved in MongoDB Vault collection.
+## 2. Technical Guide
+* **Asset Storage**: Uploaded files are stored in MinIO.
+* **Security Controls**: Access is restricted using backend middleware validation of Keycloak OIDC user scopes.
+* **Link Generation**: Generates temporary pre-signed download URLs valid for 15 minutes.
 
-## Data Schema
+---
+
+## 3. Step-by-Step Flow
+1. **Upload**: User drags a document into the Vault UI.
+2. **Transfer**: The frontend requests a pre-signed upload URL and uploads the file to MinIO.
+3. **Index**: The backend saves the document metadata in MongoDB.
+4. **Access**: When a user clicks to view a document, the API verifies authorization and generates a temporary view link.
+
+---
+
+## 4. Data Schema
 ```json
 {
-  "doc_id": "uuid",
-  "owner_id": "uuid",
-  "acl": "private"
+  "_id": "ObjectId",
+  "document_id": "string (UUID)",
+  "owner_id": "string (UUID)",
+  "filename": "renters_insurance.pdf",
+  "minio_path": "leases/renters_insurance.pdf",
+  "uploaded_at": 1783267200
 }
 ```
 
-## Edge Cases
-- **Direct MinIO access**: Implement time-limited pre-signed URLs; direct URLs are forbidden.
+---
+
+## 5. Edge Cases & Mitigations
+* **Expired token downloads**: Direct URLs to MinIO objects are blocked. Users must request temporary pre-signed URLs, which are only generated after verifying active OIDC tokens.

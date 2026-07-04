@@ -1,24 +1,36 @@
 # Feature 13: Vendor Marketplace & Dispatch
 
-## Layman Guide
-Connects local maintenance experts (plumbers, electricians) with work orders.
+## 1. Layman Guide
+When a repair ticket is created, the system matches the job with local vendors, sends an invite, and assigns the task to the vendor who accepts it first.
 
-## Technical Guide
-FastAPI interfaces with vendor directories, evaluates response time metrics, and sends job invites.
+---
 
-## Flow
-1. Work order created.
-2. Matching vendors notified.
-3. First to accept gets assigned.
+## 2. Technical Guide
+* **Matching**: Filters vendors by category and active work order limits.
+* **Locking**: Implements atomic database checks to prevent multiple vendors from accepting the same work order.
 
-## Data Schema
+---
+
+## 3. Step-by-Step Flow
+1. **Invite**: The matching engine sends invitations to target vendors.
+2. **Accept**: A vendor accepts the job via the portal.
+3. **Lock**: Backend runs atomic checks to assign the vendor.
+4. **Notify**: Confirms the assignment and updates the ticket status.
+
+---
+
+## 4. Data Schema
 ```json
 {
-  "work_order_id": "uuid",
-  "vendor_id": "uuid",
-  "accepted_at": "timestamp"
+  "_id": "ObjectId",
+  "ticket_id": "string (UUID)",
+  "vendor_id": "string (UUID)",
+  "status": "ASSIGNED",
+  "dispatch_time": 1783267200
 }
 ```
 
-## Edge Cases
-- **No vendor accepts**: Escalate ticket to 'Emergency Admin' list after 2 hours.
+---
+
+## 5. Edge Cases & Mitigations
+* **Assignment race condition**: If two vendors accept the job simultaneously, the system uses atomic database updates to assign the job to the first transaction, notifying the second vendor that the job is no longer available.

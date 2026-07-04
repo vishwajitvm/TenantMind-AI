@@ -1,24 +1,35 @@
 # Feature 19: Emergency Alert System
 
-## Layman Guide
-Broadcasts urgent safety alerts immediately (fires, extreme weather).
+## 1. Layman Guide
+Landlords can broadcast urgent safety alerts (e.g. fire hazard or severe weather warnings) to all tenants immediately via SMS, email, and portal notifications.
 
-## Technical Guide
-Bypasses standard queues; uses direct high-priority sockets and instant SMS APIs (Twilio).
+---
 
-## Flow
-1. Admin triggers Emergency.
-2. Direct gateway call.
-3. Socket broadcast + SMS dispatch.
+## 2. Technical Guide
+* **High Priority Queue**: Uses a separate high-priority Celery task queue to bypass standard tasks.
+* **Integrations**: Integrates with Twilio for immediate SMS delivery.
 
-## Data Schema
+---
+
+## 3. Step-by-Step Flow
+1. **Trigger**: Landlord posts a critical safety alert.
+2. **Prioritize**: The API places the task in the high-priority queue.
+3. **Broadcast**: Celery triggers SMS delivery via Twilio.
+4. **Push**: WebSockets display the alert overlay on active tenant screens.
+
+---
+
+## 4. Data Schema
 ```json
 {
-  "alert_id": "uuid",
-  "severity": "CRITICAL",
-  "message": "Evacuate building A"
+  "_id": "ObjectId",
+  "alert_level": "CRITICAL",
+  "message": "Immediate evacuation ordered due to water main leak.",
+  "timestamp": 1783267200
 }
 ```
 
-## Edge Cases
-- **SMS API down**: Log error, fall back to bulk email and mobile push notifications.
+---
+
+## 5. Edge Cases & Mitigations
+* **SMS carrier failure**: If Twilio returns errors, the system logs the issue and falls back to push notifications and email to ensure delivery.

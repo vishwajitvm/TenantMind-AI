@@ -1,25 +1,39 @@
 # Feature 09: Tenant Screening & Background Check
 
-## Layman Guide
-Checks criminal, credit, and eviction reports of applicants.
+## 1. Layman Guide
+Applicants can submit their information (identity documents, background details) online to authorize credit and criminal background checks. Landlords can review results directly on the dashboard.
 
-## Technical Guide
-FastAPI integrates third-party APIs (e.g. Checkr / TransUnion). Reports saved under encrypted MongoDB collections.
+---
 
-## Flow
-1. Applicant authorizes screening.
-2. Backend requests background check API.
-3. Webhook updates database with report URL.
+## 2. Technical Guide
+* **API Integration**: Integrates with third-party background screening APIs (e.g. Checkr / TransUnion).
+* **Security Controls**: Social Security Numbers (SSN) are encrypted before saving.
+* **Webhook Receiver**: Webhook endpoints capture background check updates.
 
-## Data Schema
+---
+
+## 3. Step-by-Step Flow
+1. **Consent**: Applicant inputs their details and signs the authorization form.
+2. **Submit**: Backend triggers a check request to the verification API.
+3. **Process**: The third-party service performs checks and returns results.
+4. **Update**: Webhook updates the screening status in MongoDB to `APPROVED` or `MANUAL_REVIEW`.
+
+---
+
+## 4. Data Schema
 ```json
 {
-  "screening_id": "uuid",
-  "applicant_id": "uuid",
-  "score": 750,
-  "verdict": "APPROVED"
+  "_id": "ObjectId",
+  "applicant_id": "string (UUID)",
+  "credit_score": 720,
+  "verdict": "APPROVED",
+  "reports": [
+    { "type": "criminal", "status": "clear" }
+  ]
 }
 ```
 
-## Edge Cases
-- **Incorrect SSN/identity mismatch**: Flag the report for manual review, preventing auto-rejection.
+---
+
+## 5. Edge Cases & Mitigations
+* **Identity mismatches**: If the API returns validation errors, the system updates the status to `MANUAL_REVIEW` and notifies the landlord instead of auto-rejecting.

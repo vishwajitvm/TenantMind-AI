@@ -1,25 +1,42 @@
 # Feature 01: Tenant Onboarding
 
-## Layman Guide
-A workflow that lets new tenants upload their details, complete verification, sign leases, and generate credentials.
+## 1. Layman Guide
+The Tenant Onboarding feature allows new residents to join the TenantMind AI platform. Once the landlord invites a tenant, the resident receives an email, fills out their profile details, signs their lease online, and receives credentials to log into their dashboard.
 
-## Technical Guide
-Next.js workflow coordinates steps. FastAPI validates input schema, registers the user in Keycloak, creates a profile in MongoDB, and triggers a welcome email via Celery.
+---
 
-## Flow
-1. Guest visits invite link.
-2. Fills details & uploads verification documents.
-3. FastAPI saves files to MinIO.
-4. Keycloak registers user under the `tenant` role.
+## 2. Technical Guide
+This feature coordinates operations across the Next.js client, Keycloak OIDC, MongoDB, and the Celery worker:
+* **Frontend**: Multi-step wizard collecting personal details and file uploads (ID cards, signatures).
+* **Backend REST API**: Validates inputs via Pydantic schemas, triggers background checks, uploads images to MinIO, and creates a user record in Keycloak under the `tenant` role group.
+* **Celery Workers**: Initiates welcoming tasks and creates corresponding tenancy collection profiles in MongoDB.
 
-## Data Schema
+---
+
+## 3. Step-by-Step Flow
+1. **Invite**: The landlord registers the tenant's email address on the dashboard, generating a signed invite token.
+2. **Access**: The tenant clicks the token link and completes profile details.
+3. **Verify**: Files are saved to the MinIO `inspections` bucket; metadata is saved in MongoDB.
+4. **Credential Setup**: Keycloak registers the user with status `active` and credentials are created.
+
+---
+
+## 4. Data Schema
 ```json
 {
-  "tenant_id": "uuid",
-  "verification_status": "PENDING",
-  "minio_docs": ["url1"]
+  "_id": "ObjectId",
+  "tenant_id": "string (UUID)",
+  "verification_status": "VERIFIED | PENDING | REJECTED",
+  "uploaded_documents": [
+    {
+      "type": "ID_CARD",
+      "path": "inspections/tenant_id_card.pdf"
+    }
+  ]
 }
 ```
 
-## Edge Cases
-- **Keycloak registration fails halfway**: Clean up MinIO uploads and roll back MongoDB entries to avoid orphaned profiles.
+---
+
+## 5. Edge Cases & Mitigations
+* **Keycloak registration fails halfway**: If the OIDC server fails to register the credentials but MongoDB profile creation succeeded, the system invokes an automatic rollback script to remove the MongoDB profile and prompt the user to re-submit.

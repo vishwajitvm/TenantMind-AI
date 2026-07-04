@@ -1,12 +1,17 @@
 # Changelog
 
-All notable changes to the TenantMind AI project will be documented in this file.
+All notable changes to the TenantMind AI project are tracked in this log.
 
 ## [0.1.0] - 2026-07-04
 ### Added
-- Initial microservice infrastructure using Docker Compose.
-- FastAPI backend template with MongoDB (Motor), Qdrant, Redis, MinIO, and Keycloak integrations.
-- Next.js frontend project layout with Zustand, Framer Motion, and Tailwind CSS.
-- Nginx Gateway setup for unified request routing (/api, /auth, /tracenest, /).
-- Prometheus & Grafana monitoring configuration.
-- Comprehensive system documentation (20 manuals, 20 feature documents, edge cases register, version guides, and 22 system diagrams).
+- Multi-service containerized architecture configurations in `docker-compose.yml`.
+- FastAPI backend application routing with Custom TraceNest telemetry middlewares.
+- Next.js frontend client with Zustand stores and `@xyflow/react` integration.
+- Celery worker pipelines for asynchronous PDF parsing and automated rent invoicing beat schedulers.
+- Keycloak OpenID Connect configuration files and client setups.
+- Qdrant Vector collection structures for lease RAG support.
+- Comprehensive system documentation:
+  - 25 Technical and conceptual manuals.
+  - 20 Feature specifications registers.
+  - 4 Edge-cases documentation logs.
+  - 22 Draw.io XML architectural diagrams.

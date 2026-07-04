@@ -1,24 +1,37 @@
 # Feature 10: Announcements Broadcast
 
-## Layman Guide
-Sends bulk messages to all tenants in a building or property.
+## 1. Layman Guide
+Landlords can broadcast building-wide announcements (e.g. water maintenance or parking lot cleaning) to all active tenants in a property via email and portal notifications.
 
-## Technical Guide
-FastAPI receives request, fetches list of active tenants, queues individual notifications.
+---
 
-## Flow
-1. Admin posts announcement.
-2. System fetches tenant lists.
-3. Delivers via WebSockets and Email.
+## 2. Technical Guide
+* **REST API**: Exposes the route `POST /api/announcements`.
+* **Async Dispatch**: Celery queries all active leases in a property, chunks them in batches of 100, and triggers delivery tasks.
+* **Real-time Push**: Pushes updates to active WebSocket connections on the client app.
 
-## Data Schema
+---
+
+## 3. Step-by-Step Flow
+1. **Compose**: Landlord writes the announcement and selects target properties.
+2. **Execute**: API registers the announcement in MongoDB and queues Celery delivery.
+3. **Notify**: WebSocket pushes the notification to active tenant screens.
+4. **Email**: Celery tasks send email backups.
+
+---
+
+## 4. Data Schema
 ```json
 {
-  "broadcast_id": "uuid",
-  "title": "Water Shutdown",
-  "target_property": "uuid"
+  "_id": "ObjectId",
+  "title": "Scheduled Power Outage",
+  "content": "Power will be cut on Monday between 9AM and 12PM for generator testing.",
+  "target_property_id": "ObjectId",
+  "timestamp": 1783267200
 }
 ```
 
-## Edge Cases
-- **Massive subscriber list blocking loop**: Chunk distributions in batch sizes of 100 via Celery.
+---
+
+## 5. Edge Cases & Mitigations
+* **Tenant count scaling**: To prevent database lockups at scale, Celery handles email dispatch in parallel worker threads, preventing API lag.

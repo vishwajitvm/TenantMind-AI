@@ -1,26 +1,38 @@
 # Feature 02: Maintenance Request Routing
 
-## Layman Guide
-Allows tenants to file tickets with pictures. The system automatically categorizes and sends it to the right vendor.
+## 1. Layman Guide
+When a tenant submits a repair request (such as a leaking pipe or broken heater), the system automatically analyzes the text, assigns the issue to the appropriate category, and alerts a pre-matched vendor in the local area.
 
-## Technical Guide
-FastAPI handles multi-part form uploads. Celery workers parse text to auto-tag categories (plumbing, electrical) using zero-shot classification, and dispatch to matched vendor.
+---
 
-## Flow
-1. Tenant uploads issue.
-2. File goes to MinIO, metadata to MongoDB.
-3. Worker runs classification.
-4. Matches vendor ID.
+## 2. Technical Guide
+* **FASTAPI Endpoint**: Receives multi-part file uploads and forms.
+* **Celery Classification Pipeline**: Uses a NLP text classifier model. It evaluates the ticket's title and description to extract categories (e.g. `plumbing`, `electrical`).
+* **Vendor Match Engine**: Evaluates vendor ratings, specialties, and active workloads in the properties region, auto-assigning the task to the highest-scoring match.
 
-## Data Schema
+---
+
+## 3. Step-by-Step Flow
+1. **Submit**: Tenant describes the maintenance issue and uploads a photo.
+2. **Upload**: Media uploaded to MinIO `maintenance` bucket; references saved to MongoDB.
+3. **Classify**: Celery worker identifies category as `electrical`.
+4. **Match**: The engine queries MongoDB for local electrical vendors and assigns the ticket.
+
+---
+
+## 4. Data Schema
 ```json
 {
-  "ticket_id": "uuid",
-  "category": "plumbing",
-  "vendor_id": "uuid",
-  "status": "ASSIGNED"
+  "_id": "ObjectId",
+  "ticket_id": "string (UUID)",
+  "category": "electrical",
+  "assigned_vendor_id": "string (UUID)",
+  "status": "ASSIGNED",
+  "priority": "high"
 }
 ```
 
-## Edge Cases
-- **No matching vendor found**: Route ticket to fallback 'General Admin' bucket and alert dashboard.
+---
+
+## 5. Edge Cases & Mitigations
+* **No local vendor matches**: If no electrician is available within a 20-mile radius, the ticket category falls back to a general administrator status and alerts the landlord for manual override.

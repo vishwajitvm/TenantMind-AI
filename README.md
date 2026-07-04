@@ -1,19 +1,24 @@
-# TenantMind AI - Intelligent Property Management System
+# TenantMind AI: Intelligent Property Management System
 
-TenantMind AI is a next-generation property management and tenant communication platform. It utilizes LLMs, vector search, async workers, and enterprise authentication to deliver a seamless property management experience.
+TenantMind AI is a modern, containerized property management platform leveraging state-of-the-art AI, vector databases, and enterprise identity management to automate landlord workflows and tenant communication.
 
-## Architecture Highlights
-- **Backend**: FastAPI with async Motor (MongoDB) and Qdrant (vector search for lease and document queries).
-- **Frontend**: Next.js with Zustand state management, Tailwind CSS, Lucide Icons, and React Query.
-- **Message Broker & Queue**: Celery with Redis for asynchronous task processing and scheduled jobs.
-- **Identity Provider**: Keycloak-based OpenID Connect (OIDC) integration for secure user management.
-- **Monitoring & Metrics**: Prometheus metrics endpoint scraping, visualized with Grafana and logs routed to Loki.
+## 1. Key System Components
+* **FastAPI Backend**: Hosts the REST API gateways, WebSocket connections, and RAG execution paths.
+* **Next.js Frontend**: Presents a dashboard and AI chat console utilizing Zustand, React Query, and Tailwind.
+* **Celery & Redis**: Background job queue processing PDF parsing, utility allocations, and rent billing checks.
+* **Keycloak**: Core OpenID Connect identity provider ensuring tenant-isolation data scopes.
+* **MongoDB**: Core document store managing user profiles, tickets, and payments.
+* **Qdrant**: High-performance vector database storing lease document embeddings.
+* **MinIO**: S3-compatible asset store.
+* **Prometheus & Grafana**: Infrastructure instrumentation and telemetry logs dashboard.
+* **Nginx**: Reverse proxy unifying routing.
 
-## Getting Started
-To get the system running locally:
+---
+
+## 2. Quick Start
+To build and launch the platform:
 ```bash
-docker-compose up --build
+docker-compose up --build -d
 ```
-This starts the backend, worker, scheduler, frontend, database, Redis, Qdrant, MinIO, Keycloak, Prometheus, Grafana, and Nginx.
-
-Please read the extensive manuals inside the `docs/` folder to understand deployment, security, feature setups, and the architecture in detail.
+All details regarding installation and configuration can be found in [docs/04-installation-and-setup.md](file:///c:/python/TenantMind%20AI/docs/04-installation-and-setup.md).
+Please check [docs/03-complete-beginner-guide.md](file:///c:/python/TenantMind%20AI/docs/03-complete-beginner-guide.md) for an overview of the AI and database technologies used in this project.

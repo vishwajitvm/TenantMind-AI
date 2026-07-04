@@ -1,24 +1,35 @@
 # Feature 20: Integration Webhooks
 
-## Layman Guide
-Enables external software (like accounting tools) to sync with TenantMind.
+## 1. Layman Guide
+Enables external software platforms (such as landlord accounting tools or calendars) to subscribe to events in TenantMind AI, syncing data automatically.
 
-## Technical Guide
-Outgoing webhook dispatcher with retry loops and signature validation (`X-TenantMind-Signature`).
+---
 
-## Flow
-1. Internal event triggers.
-2. Dispatcher builds payload.
-3. POSTs payload to registered URL.
+## 2. Technical Guide
+* **Signing**: Webhook requests are signed using a SHA256 HMAC signature in the `X-TenantMind-Signature` header.
+* **Delivery**: Celery handles webhook deliveries, scheduling retries with exponential backoff on failure.
 
-## Data Schema
+---
+
+## 3. Step-by-Step Flow
+1. **Trigger**: An event occurs in the system (e.g. `PAYMENT_COMPLETED`).
+2. **Build**: Webhook generator builds a JSON payload and signs it.
+3. **Send**: Post payload to registered subscriber URLs.
+4. **Retry**: If the delivery fails, the system retries with exponential backoff.
+
+---
+
+## 4. Data Schema
 ```json
 {
-  "webhook_id": "uuid",
-  "target_url": "https://accounting.com/sync",
-  "secret": "hmac_key"
+  "_id": "ObjectId",
+  "webhook_url": "https://external-accounting.com/hooks",
+  "secret_key": "hmac-secret-hash",
+  "subscribed_events": ["PAYMENT_COMPLETED"]
 }
 ```
 
-## Edge Cases
-- **Slow endpoint (timeout)**: Set timeout to 5s. Mark failed and schedule exponential backoff.
+---
+
+## 5. Edge Cases & Mitigations
+* **Slow subscriber servers**: Requests timeout after 5 seconds to prevent slow external servers from blocking internal queues. Failed deliveries are marked for retry.
