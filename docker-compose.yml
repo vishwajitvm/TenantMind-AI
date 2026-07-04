@@ -10,7 +10,7 @@ services:
     volumes:
       - ./backend:/app
     environment:
-      - MONGODB_ATLAS_URI=${MONGODB_ATLAS_URI}
+      - MONGODB_ATLAS_URI=${MONGODB_ATLAS_URI:-mongodb://mongodb:27017/platform_db}
       - KEYCLOAK_URL=http://keycloak:8080
       - KEYCLOAK_REALM=tenantmind
       - KEYCLOAK_CLIENT_ID=backend-client
@@ -30,6 +30,7 @@ services:
       - qdrant
       - minio
       - keycloak
+      - mongodb
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 
   worker:
@@ -39,7 +40,7 @@ services:
     volumes:
       - ./backend:/app
     environment:
-      - MONGODB_ATLAS_URI=${MONGODB_ATLAS_URI}
+      - MONGODB_ATLAS_URI=${MONGODB_ATLAS_URI:-mongodb://mongodb:27017/platform_db}
       - QDRANT_URL=http://qdrant:6333
       - REDIS_URL=redis://redis:6379/0
       - MINIO_ENDPOINT=http://minio:9000
@@ -53,6 +54,7 @@ services:
       - redis
       - qdrant
       - minio
+      - mongodb
     command: celery -A app.workers.tasks.celery_app worker --loglevel=info
 
   scheduler:
@@ -176,9 +178,17 @@ services:
     ports:
       - "3100:3100"
 
+  mongodb:
+    image: mongo:6-jammy
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+
 volumes:
   redis_data:
   qdrant_data:
   minio_data:
   ollama_data:
   postgres_keycloak_data:
+  mongodb_data:

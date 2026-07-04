@@ -23,8 +23,9 @@ _mongo_client: AsyncIOMotorClient = None
 def get_mongo_client() -> AsyncIOMotorClient:
     global _mongo_client
     if _mongo_client is None:
-        _mongo_client = AsyncIOMotorClient(settings.MONGODB_ATLAS_URI)
-        logger.info("Initialized MongoDB AsyncIOMotorClient")
+        uri = settings.MONGODB_ATLAS_URI or "mongodb://localhost:27017"
+        _mongo_client = AsyncIOMotorClient(uri)
+        logger.info(f"Initialized MongoDB AsyncIOMotorClient on {uri}")
     return _mongo_client
 
 def get_db():

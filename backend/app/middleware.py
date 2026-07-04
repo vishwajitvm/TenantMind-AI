@@ -110,8 +110,8 @@ class TenantMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         # Exclude public endpoints
         path = request.url.path
-        if path in ["/health", "/docs", "/redoc", "/openapi.json"] or path.startswith("/api/health"):
-            # Set default tenant for health/docs
+        if path in ["/health", "/docs", "/redoc", "/openapi.json", "/tracenest", "/tracenest/logs"] or path.startswith("/api/health"):
+            # Set default tenant for health/docs/telemetry
             tenant_context.set("default")
             return await call_next(request)
 
