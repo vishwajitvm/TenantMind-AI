@@ -1,0 +1,28 @@
+<mxfile host="65bd71144e">
+    <diagram id="diag-15" name="15-audit-logging-flow">
+        <mxGraphModel dx="1000" dy="1000" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="title" value="TenantMind AI: Audit Logging Flow" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=18;fontStyle=1" vertex="1" parent="1">
+                    <mxGeometry x="100" y="50" width="400" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="action" value="Admin Action (e.g. edit lease)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;" vertex="1" parent="1">
+                    <mxGeometry x="100" y="150" width="150" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="mid" value="FastAPI Middleware Intercept" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;" vertex="1" parent="1">
+                    <mxGeometry x="300" y="150" width="160" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="db" value="MongoDB Audit Log" style="shape=cylinder3;whiteSpace=wrap;html=1;fillColor=#d5e8d4;" vertex="1" parent="1">
+                    <mxGeometry x="510" y="130" width="100" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="conn1" value="Sends POST" style="endArrow=classic;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="action" target="mid">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="conn2" value="Async log write" style="endArrow=classic;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="mid" target="db">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>

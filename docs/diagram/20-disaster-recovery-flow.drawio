@@ -1,0 +1,28 @@
+<mxfile host="65bd71144e">
+    <diagram id="diag-20" name="20-disaster-recovery-flow">
+        <mxGraphModel dx="1000" dy="1000" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="title" value="TenantMind AI: Disaster Recovery Flow" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=18;fontStyle=1" vertex="1" parent="1">
+                    <mxGeometry x="100" y="50" width="400" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="fail" value="Primary Database Failure" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;" vertex="1" parent="1">
+                    <mxGeometry x="100" y="150" width="150" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="replica" value="Promote Read Replica" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;" vertex="1" parent="1">
+                    <mxGeometry x="300" y="150" width="140" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="restore" value="Restore Services" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;" vertex="1" parent="1">
+                    <mxGeometry x="490" y="150" width="120" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="conn1" value="Auto failover" style="endArrow=classic;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="fail" target="replica">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="conn2" value="Reconnect config" style="endArrow=classic;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="replica" target="restore">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>
