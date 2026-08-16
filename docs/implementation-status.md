@@ -19,3 +19,5 @@ Current implementation checklist and progress towards production readiness.
 - [x] Phase 15: Versioned Documentation Completion
 - [x] Phase 16: Draw.io Diagrams Completion
 - [x] Phase 17: Final Run and Verification
+
+For a detailed feature-by-feature and sub-feature breakdown of what is Done, Under Development, and Pending, refer to [feature-status-tracker.md](file:///c:/python/TenantMind%20AI/docs/feature-status-tracker.md).

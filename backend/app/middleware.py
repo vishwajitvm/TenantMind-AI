@@ -1,3 +1,4 @@
+from langsmith import traceable
 import time
 import json
 import logging
@@ -7,7 +8,8 @@ from jose import jwt, JWTError
 import httpx
 from app.config import settings
 from app.database import tenant_context
-from tracenest import logger
+import logging
+logger = logging.getLogger(__name__)
 
 # Global cache for Keycloak public keys to avoid fetching on every request
 _jwks_cache = None
@@ -31,6 +33,9 @@ async def get_keycloak_jwks() -> dict:
             logger.error(f"Error fetching Keycloak JWKS from {url}: {str(e)}")
     return _jwks_cache or {}
 
+from langsmith import traceable
+
+@traceable(reduce_fn=lambda r: {"tenant_slug": r.get("outputs") if r else None}, tags=["auth", "extraction"])
 def extract_tenant_from_token(token: str) -> str:
     """Decodes token and retrieves tenant slug/org identifier."""
     try:
@@ -57,6 +62,7 @@ def extract_tenant_from_token(token: str) -> str:
         logger.warning(f"Error reading unverified claims: {str(e)}")
     return "default"
 
+@traceable(reduce_fn=lambda r: {"tenant_slug": r.get("outputs") if r else None}, tags=["auth", "validation"])
 async def validate_token_and_get_tenant(token: str) -> str:
     """Validates Keycloak JWT and returns the tenant slug."""
     # For testing/dev, if verification fails or Keycloak is unreachable,
@@ -139,36 +145,3 @@ class TenantMiddleware(BaseHTTPMiddleware):
 
         return await call_next(request)
 
-class TraceNestMiddleware(BaseHTTPMiddleware):
-    async def dispatch(self, request: Request, call_next):
-        start_time = time.time()
-        method = request.method
-        url = str(request.url)
-        path = request.url.path
-        client_ip = request.client.host if request.client else "unknown"
-        
-        # Redact sensitive headers
-        headers_to_log = dict(request.headers)
-        for key in ["authorization", "cookie", "x-api-key", "proxy-authorization"]:
-            if key in headers_to_log:
-                headers_to_log[key] = "[REDACTED]"
-        
-        logger.info(f"Incoming Request: {method} {path} from {client_ip} | Headers: {json.dumps(headers_to_log)}")
-        
-        try:
-            response: Response = await call_next(request)
-            duration = time.time() - start_time
-            logger.info(
-                f"Request Completed: {method} {path} | Status: {response.status_code} | Duration: {duration:.4f}s"
-            )
-            # Add custom header with execution duration
-            response.headers["X-Process-Time"] = f"{duration:.4f}s"
-            return response
-        except Exception as e:
-            duration = time.time() - start_time
-            logger.error(
-                f"Request Failed: {method} {path} | Error: {str(e)} | Duration: {duration:.4f}s",
-                exc_info=True
-            )
-            # Re-raise to let exception handlers catch it
-            raise e

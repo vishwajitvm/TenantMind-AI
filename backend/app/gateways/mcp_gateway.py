@@ -1,8 +1,10 @@
+from langsmith import traceable
 import uuid
 import time
 from typing import Dict, Any, Tuple
 from app.database import get_db
-from tracenest import logger
+import logging
+logger = logging.getLogger(__name__)
 
 class MCPGateway:
     @staticmethod
@@ -40,6 +42,7 @@ class MCPGateway:
         return "low"
 
     @classmethod
+    @traceable
     async def process_tool_call(
         cls, 
         tenant_id: str, 

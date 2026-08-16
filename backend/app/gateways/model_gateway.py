@@ -1,9 +1,11 @@
+from langsmith import traceable
 import time
 import httpx
 from typing import List, Dict, Any, Optional
 from app.config import settings
 from app.database import get_db
-from tracenest import logger
+import logging
+logger = logging.getLogger(__name__)
 
 async def log_llm_attempt(
     tenant_id: str,
@@ -44,6 +46,7 @@ async def log_llm_attempt(
 
 class ModelGateway:
     @staticmethod
+    @traceable
     async def try_gemini(messages: List[Dict[str, str]], tenant_id: str) -> Dict[str, Any]:
         if not settings.GEMINI_API_KEY:
             raise ValueError("Gemini API key is not configured")
@@ -87,6 +90,7 @@ class ModelGateway:
             }
 
     @staticmethod
+    @traceable
     async def try_groq(messages: List[Dict[str, str]], tenant_id: str) -> Dict[str, Any]:
         if not settings.GROQ_API_KEY:
             raise ValueError("Groq API key is not configured")
@@ -127,6 +131,7 @@ class ModelGateway:
             }
 
     @staticmethod
+    @traceable
     async def try_openrouter(messages: List[Dict[str, str]], tenant_id: str) -> Dict[str, Any]:
         if not settings.OPENROUTER_API_KEY:
             raise ValueError("OpenRouter API key is not configured")
@@ -166,6 +171,7 @@ class ModelGateway:
             }
 
     @staticmethod
+    @traceable
     async def try_ollama(messages: List[Dict[str, str]], tenant_id: str) -> Dict[str, Any]:
         url = f"{settings.OLLAMA_BASE_URL}/api/chat"
         payload = {
@@ -197,6 +203,7 @@ class ModelGateway:
             }
 
     @classmethod
+    @traceable
     async def generate(cls, messages: List[Dict[str, str]], tenant_id: str = "default") -> Dict[str, Any]:
         """Runs the Multi-Model fallback chain: Gemini -> Groq -> OpenRouter -> Ollama.
         If all fail or are unconfigured, we run a simulated fallback (mock LLM) to ensure system usability.

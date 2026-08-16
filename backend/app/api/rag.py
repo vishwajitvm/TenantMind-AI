@@ -1,10 +1,12 @@
+from langsmith import traceable
 from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel
 from typing import List, Dict, Any, Optional
 from app.database import get_db, get_tenant_slug, get_qdrant_client
 from app.gateways.model_gateway import ModelGateway
 from app.gateways.embedding_gateway import EmbeddingGateway
-from tracenest import logger
+import logging
+logger = logging.getLogger(__name__)
 import time
 
 router = APIRouter(prefix="/rag", tags=["RAG"])
@@ -14,6 +16,7 @@ class RAGQueryRequest(BaseModel):
     limit: Optional[int] = 3
 
 @router.post("/query")
+@traceable
 async def rag_query(payload: RAGQueryRequest):
     """Stateless RAG query execution yielding grounding sources and confidence estimation."""
     slug = get_tenant_slug()

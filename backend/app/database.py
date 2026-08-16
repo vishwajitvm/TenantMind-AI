@@ -1,15 +1,18 @@
+from langsmith import traceable
 from contextvars import ContextVar
 from motor.motor_asyncio import AsyncIOMotorClient
 from qdrant_client import QdrantClient
 from qdrant_client.http import models as qmodels
 from minio import Minio
 from app.config import settings
-from tracenest import logger
+import logging
+logger = logging.getLogger(__name__)
 import re
 
 # Context variable to hold current tenant slug
 tenant_context: ContextVar[str] = ContextVar("tenant_context", default="default")
 
+@traceable
 def get_tenant_slug() -> str:
     """Returns the current tenant slug, sanitized for database/bucket naming."""
     slug = tenant_context.get()
@@ -20,6 +23,7 @@ def get_tenant_slug() -> str:
 # MongoDB dynamic routing
 _mongo_client: AsyncIOMotorClient = None
 
+@traceable
 def get_mongo_client() -> AsyncIOMotorClient:
     global _mongo_client
     if _mongo_client is None:
@@ -28,6 +32,7 @@ def get_mongo_client() -> AsyncIOMotorClient:
         logger.info(f"Initialized MongoDB AsyncIOMotorClient on {uri}")
     return _mongo_client
 
+@traceable
 def get_db():
     client = get_mongo_client()
     slug = get_tenant_slug()
@@ -37,6 +42,7 @@ def get_db():
 # MinIO client and bucket helper
 _minio_client: Minio = None
 
+@traceable
 def get_minio_client() -> Minio:
     global _minio_client
     if _minio_client is None:
@@ -51,6 +57,7 @@ def get_minio_client() -> Minio:
         logger.info(f"Initialized MinIO Client at {endpoint}")
     return _minio_client
 
+@traceable
 def ensure_minio_bucket() -> str:
     client = get_minio_client()
     slug = get_tenant_slug()
@@ -68,6 +75,7 @@ def ensure_minio_bucket() -> str:
 # Qdrant client and collection helper
 _qdrant_client: QdrantClient = None
 
+@traceable
 def get_qdrant_client() -> QdrantClient:
     global _qdrant_client
     if _qdrant_client is None:
@@ -75,6 +83,7 @@ def get_qdrant_client() -> QdrantClient:
         logger.info(f"Initialized Qdrant client at {settings.QDRANT_URL}")
     return _qdrant_client
 
+@traceable
 def ensure_qdrant_collection(vector_size: int = 1536, distance_metric: str = "Cosine") -> str:
     client = get_qdrant_client()
     slug = get_tenant_slug()

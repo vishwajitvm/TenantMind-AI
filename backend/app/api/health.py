@@ -2,7 +2,8 @@ from fastapi import APIRouter, status, Response, HTTPException
 from app.database import get_db, get_qdrant_client, get_minio_client
 from app.config import settings
 from redis import Redis
-from tracenest import logger
+import logging
+logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["Health"])
 

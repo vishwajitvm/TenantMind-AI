@@ -1,3 +1,4 @@
+from langsmith import traceable
 from fastapi import APIRouter, HTTPException, Query, status
 from pydantic import BaseModel
 from typing import List, Dict, Any, Optional
@@ -5,7 +6,8 @@ from app.database import get_db, get_tenant_slug, get_qdrant_client
 from app.gateways.model_gateway import ModelGateway
 from app.gateways.embedding_gateway import EmbeddingGateway
 from app.gateways.mcp_gateway import MCPGateway
-from tracenest import logger
+import logging
+logger = logging.getLogger(__name__)
 import time
 import json
 import uuid
@@ -23,6 +25,7 @@ class ChatRequest(BaseModel):
 
 @router.post("/chat")
 @router.post("/chats")
+@traceable
 async def chat_interaction(payload: ChatRequest):
     """Processes chat request with RAG retrieval, MCP verification, and multi-model fallback."""
     slug = get_tenant_slug()

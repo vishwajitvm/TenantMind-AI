@@ -1,36 +1,23 @@
 # Feature 17: Multi-Tenant Access Control
 
-## 1. Layman Guide
-This security mechanism acts like virtual walls, ensuring tenants can only access information related to their own lease, and landlords can only view properties they own.
+## Layman Guide
+Ensures tenants only see their units, and landlords only see their properties.
 
----
+## Technical Guide
+API uses tenancy context extraction from Keycloak tokens. MongoDB queries include `landlord_id` or `tenant_id` filters.
 
-## 2. Technical Guide
-* **Token Extraction**: The API extracts the user's role and tenant scope from incoming Keycloak OIDC JWT tokens.
-* **Query Scoping**: Database queries include tenant filtering criteria based on the token scope.
+## Flow
+1. Client requests data.
+2. Middleware reads JWT claims.
+3. Database filters matching scope.
 
----
-
-## 3. Step-by-Step Flow
-1. **Request**: User requests data from an API endpoint.
-2. **Decode**: FastAPI middleware validates the OIDC token and extracts tenant scope.
-3. **Filter**: Database queries are automatically scoped using the tenant ID.
-4. **Deliver**: The API returns only the authorized subset of records.
-
----
-
-## 4. Data Schema
+## Data Schema
 ```json
 {
-  "request_context": {
-    "user_id": "string (UUID)",
-    "role": "tenant",
-    "authorized_tenant_id": "tenant-uuid-1"
-  }
+  "tenant_id": "uuid",
+  "accessible_units": ["unit_1"]
 }
 ```
 
----
-
-## 5. Edge Cases & Mitigations
-* **Sub-tenant access permissions**: When a lease is sub-let, landlords can add sub-tenant mappings to the unit profile in MongoDB to grant access.
+## Edge Cases
+- **Sub-lease tenant access**: Add sub-tenant mapping structure inside unit metadata to grant access.

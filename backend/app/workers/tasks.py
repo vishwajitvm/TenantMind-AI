@@ -4,7 +4,8 @@ from celery import Celery
 from app.config import settings
 from app.database import tenant_context, get_minio_client, get_db
 from app.ingestion.extractor import DocumentExtractor
-from tracenest import logger
+import logging
+logger = logging.getLogger(__name__)
 
 # Initialize Celery
 celery_app = Celery(

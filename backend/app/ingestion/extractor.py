@@ -8,7 +8,8 @@ from typing import List, Dict, Any, Tuple
 from app.gateways.embedding_gateway import EmbeddingGateway
 from app.database import ensure_qdrant_collection, get_qdrant_client, get_tenant_slug
 from qdrant_client.http import models as qmodels
-from tracenest import logger
+import logging
+logger = logging.getLogger(__name__)
 
 # Regex for common secrets
 SECRET_PATTERNS = {

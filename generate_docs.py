@@ -29,14 +29,14 @@ TenantMind AI is a next-generation property management and tenant communication 
 - **Frontend**: Next.js with Zustand state management, Tailwind CSS, Lucide Icons, and React Query.
 - **Message Broker & Queue**: Celery with Redis for asynchronous task processing and scheduled jobs.
 - **Identity Provider**: Keycloak-based OpenID Connect (OIDC) integration for secure user management.
-- **Monitoring & Metrics**: Prometheus metrics endpoint scraping, visualized with Grafana and logs routed to Loki.
+- **Monitoring & Metrics**: LangSmith traces endpoint scraping, visualized with LangSmith and logs routed to LangSmith.
 
 ## Getting Started
 To get the system running locally:
 ```bash
 docker-compose up --build
 ```
-This starts the backend, worker, scheduler, frontend, database, Redis, Qdrant, MinIO, Keycloak, Prometheus, Grafana, and Nginx.
+This starts the backend, worker, scheduler, frontend, database, Redis, Qdrant, MinIO, Keycloak, LangSmith, LangSmith, and Nginx.
 
 Please read the extensive manuals inside the `docs/` folder to understand deployment, security, feature setups, and the architecture in detail.
 """
@@ -53,7 +53,7 @@ All notable changes to the TenantMind AI project will be documented in this file
 - FastAPI backend template with MongoDB (Motor), Qdrant, Redis, MinIO, and Keycloak integrations.
 - Next.js frontend project layout with Zustand, Framer Motion, and Tailwind CSS.
 - Nginx Gateway setup for unified request routing (/api, /auth, /tracenest, /).
-- Prometheus & Grafana monitoring configuration.
+- LangSmith & LangSmith monitoring configuration.
 - Comprehensive system documentation (20 manuals, 20 feature documents, edge cases register, version guides, and 22 system diagrams).
 """
     write_file("CHANGELOG.md", changelog_content)
@@ -124,7 +124,7 @@ All requests (except public endpoints) require a Bearer JWT Token issued by Keyc
 - `POST /api/properties`: Create property.
 - `POST /api/leases/query`: semantic vector search over lease agreements.
 - `POST /api/maintenance`: Create maintenance request.
-- `GET /api/metrics`: Prometheus metrics scraping target.
+- `GET /api/traces`: LangSmith traces scraping target.
 """,
         "docs/06-frontend-architecture-and-flow.md": """# 06. Frontend Architecture & Flow
 
@@ -189,18 +189,18 @@ The tenant portal provides key interfaces:
         "docs/12-landlord-and-admin-dashboard.md": """# 12. Landlord & Admin Dashboard
 
 Landlords and property managers view system analytics:
-- **Financial metrics**: Outstanding balances, payment history, property yields.
+- **Financial traces**: Outstanding balances, payment history, property yields.
 - **Ticket Manager**: Kanban board showing ticket status, assign button, vendor dispatch controls.
 - **User profiles**: Admin access to configure lease templates and system preferences.
 """,
-        "docs/13-monitoring-metrics-and-logging.md": """# 13. Monitoring, Metrics & Logging
+        "docs/13-monitoring-traces-and-logging.md": """# 13. Monitoring, Metrics & Logging
 
 We run a full observability stack.
 
 ## Components
-- **Prometheus**: Scrapes `/api/metrics` from FastAPI.
-- **Grafana**: Visualizes throughput, latencies, CPU/Memory load, and Celery queue length.
-- **Loki**: Aggregates Nginx and backend container logs.
+- **LangSmith**: Scrapes `/api/traces` from FastAPI.
+- **LangSmith**: Visualizes throughput, latencies, CPU/Memory load, and Celery queue length.
+- **LangSmith**: Aggregates Nginx and backend container logs.
 """,
         "docs/14-testing-and-quality-assurance.md": """# 14. Testing & Quality Assurance
 
@@ -586,7 +586,7 @@ FastAPI runs aggregation pipelines over MongoDB `payments` collection.
 Connects local maintenance experts (plumbers, electricians) with work orders.
 
 ## Technical Guide
-FastAPI interfaces with vendor directories, evaluates response time metrics, and sends job invites.
+FastAPI interfaces with vendor directories, evaluates response time traces, and sends job invites.
 
 ## Flow
 1. Work order created.
@@ -868,7 +868,7 @@ def generate_diagrams():
         "14-inspection-reporting-flow",
         "15-audit-logging-flow",
         "16-utility-billing-flow",
-        "17-monitoring-metrics-flow",
+        "17-monitoring-traces-flow",
         "18-ci-cd-pipeline-flow",
         "19-security-threat-model",
         "20-disaster-recovery-flow",

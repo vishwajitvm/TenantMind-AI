@@ -1,7 +1,9 @@
+from langsmith import traceable
 import numpy as np
 import hashlib
 from typing import List, Union
-from tracenest import logger
+import logging
+logger = logging.getLogger(__name__)
 
 # Lazy loader/cache for local SentenceTransformer model
 _transformer_model = None
@@ -21,6 +23,7 @@ class EmbeddingGateway:
         return 384
 
     @classmethod
+    @traceable
     def get_embedding(cls, text: str, model_name: str = "all-MiniLM-L6-v2") -> List[float]:
         """Generates embedding vector for a given string of text."""
         dimension = cls.get_dimension(model_name)
