@@ -80,7 +80,7 @@ async def upload_document(file: UploadFile = File(...)):
         # In testing without redis, we can process it synchronously or log the warning
         # Let's log it
         import logging
-logger = logging.getLogger(__name__)
+        logger = logging.getLogger(__name__)
         logger.warning(f"Celery queue not available, could not dispatch task. Error: {str(e)}")
         
     return {
