@@ -1,3 +1,4 @@
+from tracenest import logger
 from fastapi import APIRouter, Query
 from app.database import get_db, get_tenant_slug
 from typing import Optional, List, Dict, Any

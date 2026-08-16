@@ -2,13 +2,13 @@ from fastapi import APIRouter, status, Response, HTTPException
 from app.database import get_db, get_qdrant_client, get_minio_client
 from app.config import settings
 from redis import Redis
-import logging
-logger = logging.getLogger(__name__)
+from tracenest import logger
 
 router = APIRouter(tags=["Health"])
 
 @router.get("/health")
 async def health_check(response: Response):
+    logger.debug(f"Entering health_check")
     """Pings MongoDB, Qdrant, MinIO, and Redis to check service health."""
     status_report = {
         "status": "healthy",
@@ -62,6 +62,7 @@ async def health_check(response: Response):
 
 @router.get("/ready")
 async def readiness_check(response: Response):
+    logger.debug(f"Entering readiness_check")
     """Readiness probe. Checks if dependencies are accessible."""
     status_report = await health_check(response)
     if status_report["status"] != "healthy":
@@ -73,6 +74,7 @@ async def readiness_check(response: Response):
 
 @router.get("/metrics")
 async def metrics():
+    logger.debug(f"Entering metrics")
     """Prometheus metrics endpoint."""
     # Return simple metrics payload
     from fastapi.responses import PlainTextResponse

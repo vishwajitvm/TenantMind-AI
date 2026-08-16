@@ -4,8 +4,7 @@ import httpx
 from typing import List, Dict, Any, Optional
 from app.config import settings
 from app.database import get_db
-import logging
-logger = logging.getLogger(__name__)
+from tracenest import logger
 
 async def log_llm_attempt(
     tenant_id: str,
@@ -48,6 +47,7 @@ class ModelGateway:
     @staticmethod
     @traceable
     async def try_gemini(messages: List[Dict[str, str]], tenant_id: str) -> Dict[str, Any]:
+        logger.debug(f"Entering try_gemini")
         if not settings.GEMINI_API_KEY:
             raise ValueError("Gemini API key is not configured")
         
@@ -92,6 +92,7 @@ class ModelGateway:
     @staticmethod
     @traceable
     async def try_groq(messages: List[Dict[str, str]], tenant_id: str) -> Dict[str, Any]:
+        logger.debug(f"Entering try_groq")
         if not settings.GROQ_API_KEY:
             raise ValueError("Groq API key is not configured")
         
@@ -133,6 +134,7 @@ class ModelGateway:
     @staticmethod
     @traceable
     async def try_openrouter(messages: List[Dict[str, str]], tenant_id: str) -> Dict[str, Any]:
+        logger.debug(f"Entering try_openrouter")
         if not settings.OPENROUTER_API_KEY:
             raise ValueError("OpenRouter API key is not configured")
         
@@ -173,6 +175,7 @@ class ModelGateway:
     @staticmethod
     @traceable
     async def try_ollama(messages: List[Dict[str, str]], tenant_id: str) -> Dict[str, Any]:
+        logger.debug(f"Entering try_ollama")
         url = f"{settings.OLLAMA_BASE_URL}/api/chat"
         payload = {
             "model": "llama3",
@@ -205,39 +208,41 @@ class ModelGateway:
     @classmethod
     @traceable
     async def generate(cls, messages: List[Dict[str, str]], tenant_id: str = "default") -> Dict[str, Any]:
-        """Runs the Multi-Model fallback chain: Gemini -> Groq -> OpenRouter -> Ollama.
-        If all fail or are unconfigured, we run a simulated fallback (mock LLM) to ensure system usability.
-        """
-        errors = []
+        logger.debug(f"Entering generate in ModelGateway")
+        """Cascades through LLM providers until successful."""
+        logger.info(f"ModelGateway activated for tenant {tenant_id}. Input messages count: {len(messages)}")
         
-        # 1. Gemini
-        try:
-            return await cls.try_gemini(messages, tenant_id)
-        except Exception as e:
-            errors.append(f"Gemini failed: {str(e)}")
-            
-        # 2. Groq
-        try:
-            return await cls.try_groq(messages, tenant_id)
-        except Exception as e:
-            errors.append(f"Groq failed: {str(e)}")
-            
-        # 3. OpenRouter
-        try:
-            return await cls.try_openrouter(messages, tenant_id)
-        except Exception as e:
-            errors.append(f"OpenRouter failed: {str(e)}")
-            
-        # 4. Ollama
-        try:
-            return await cls.try_ollama(messages, tenant_id)
-        except Exception as e:
-            errors.append(f"Ollama failed: {str(e)}")
-            
-        # 5. Local Mock Simulation Fallback
-        # If we got here, all providers failed. For resilience (e.g. testing / demo),
+        providers = cls._get_providers()
+        logger.debug(f"Resolved LLM fallback provider sequence: {providers}")
+        
+        errors = []
+        for provider in providers:
+            logger.info(f"Attempting inference via LLM provider: [{provider.upper()}]")
+            start_time = time.time()
+            try:
+                logger.debug(f"Routing request to internal handler: _call_{provider}")
+                content = await getattr(cls, f"_call_{provider}")(messages)
+                latency = round(time.time() - start_time, 2)
+                
+                logger.info(f"SUCCESS: LLM inference completed via [{provider.upper()}] in {latency}s.")
+                logger.debug(f"Extracted content preview: {content[:100]}...")
+                
+                return {
+                    "content": content,
+                    "provider": provider,
+                    "model": cls._get_model_for_provider(provider),
+                    "usage": {},
+                    "latency": latency
+                }
+            except Exception as e:
+                latency = round(time.time() - start_time, 2)
+                logger.warning(f"FAILURE: Provider [{provider.upper()}] failed after {latency}s. Error: {str(e)}", exc_info=True)
+                errors.append(f"{provider}: {str(e)}")
+                
+        # Local Mock Simulation Fallback
+        # If we got here, all configured providers failed. For resilience (e.g. testing / demo),
         # return a mock LLM response instead of crashing.
-        logger.warning(f"All LLM providers failed. Falling back to Mock LLM. Errors: {errors}")
+        logger.warning(f"All configured LLM providers failed. Falling back to Mock LLM. Errors: {errors}")
         start_time = time.time()
         time.sleep(0.05) # simulate latency
         duration = time.time() - start_time

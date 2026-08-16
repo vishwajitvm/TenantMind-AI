@@ -1,3 +1,4 @@
+from tracenest import logger
 from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel
 from app.database import get_db, get_tenant_slug
@@ -14,6 +15,7 @@ class UserCreate(BaseModel):
 
 @router.get("")
 async def list_users():
+    logger.debug(f"Entering list_users")
     """Lists users belonging to the active organization."""
     slug = get_tenant_slug()
     db = get_db()
@@ -27,6 +29,7 @@ async def list_users():
 
 @router.post("", status_code=status.HTTP_201_CREATED)
 async def create_user(payload: UserCreate):
+    logger.debug(f"Entering create_user")
     """Creates a user record mapped to the current tenant."""
     slug = get_tenant_slug()
     db = get_db()

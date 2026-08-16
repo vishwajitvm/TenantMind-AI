@@ -1,3 +1,4 @@
+from tracenest import logger
 from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel
 from app.database import get_tenant_slug
@@ -13,6 +14,7 @@ class ToolExecuteRequest(BaseModel):
 
 @router.get("/tools")
 async def list_tools():
+    logger.debug(f"Entering list_tools")
     """Lists registered MCP tools and their risk classifications."""
     return [
         {"name": "document_read", "risk_level": "low", "description": "Read document content"},
@@ -27,6 +29,7 @@ async def list_tools():
 
 @router.post("/execute")
 async def execute_tool(payload: ToolExecuteRequest):
+    logger.debug(f"Entering execute_tool")
     """Executes a tool call, routing through the MCP Risk Engine and approvals workflow."""
     slug = get_tenant_slug()
     

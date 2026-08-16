@@ -1,3 +1,4 @@
+from tracenest import logger
 from fastapi import APIRouter
 from app.config import settings
 
@@ -5,6 +6,7 @@ router = APIRouter(prefix="/models", tags=["Models"])
 
 @router.get("")
 async def list_models():
+    logger.debug(f"Entering list_models")
     """Lists configured LLMs and Embedding models based on API key availability."""
     return {
         "llms": [

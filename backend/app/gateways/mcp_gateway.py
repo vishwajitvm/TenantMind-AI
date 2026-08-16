@@ -3,12 +3,12 @@ import uuid
 import time
 from typing import Dict, Any, Tuple
 from app.database import get_db
-import logging
-logger = logging.getLogger(__name__)
+from tracenest import logger
 
 class MCPGateway:
     @staticmethod
     def classify_risk(tool_name: str, arguments: Dict[str, Any]) -> str:
+        logger.debug(f"Entering classify_risk")
         """Classifies risk level of an MCP tool call as: low, medium, high, or critical."""
         tool_name_lower = tool_name.lower()
         args_str = str(arguments).lower()

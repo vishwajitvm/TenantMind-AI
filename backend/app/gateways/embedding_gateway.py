@@ -2,8 +2,7 @@ from langsmith import traceable
 import numpy as np
 import hashlib
 from typing import List, Union
-import logging
-logger = logging.getLogger(__name__)
+from tracenest import logger
 
 # Lazy loader/cache for local SentenceTransformer model
 _transformer_model = None
@@ -11,6 +10,7 @@ _transformer_model = None
 class EmbeddingGateway:
     @staticmethod
     def get_dimension(model_name: str) -> int:
+        logger.debug(f"Entering get_dimension")
         """Returns the vector dimensions for standard models."""
         model_lower = model_name.lower()
         if "minilm" in model_lower:
@@ -25,6 +25,7 @@ class EmbeddingGateway:
     @classmethod
     @traceable
     def get_embedding(cls, text: str, model_name: str = "all-MiniLM-L6-v2") -> List[float]:
+        logger.debug(f"Entering get_embedding")
         """Generates embedding vector for a given string of text."""
         dimension = cls.get_dimension(model_name)
         
@@ -48,11 +49,13 @@ class EmbeddingGateway:
 
     @classmethod
     def get_embeddings(cls, texts: List[str], model_name: str = "all-MiniLM-L6-v2") -> List[List[float]]:
+        logger.debug(f"Entering get_embeddings")
         """Generates embeddings for a batch of texts."""
         return [cls.get_embedding(t, model_name) for t in texts]
 
     @staticmethod
     def _generate_fallback_vector(text: str, dimension: int) -> List[float]:
+        logger.debug(f"Entering _generate_fallback_vector")
         """Generates a deterministic pseudo-random unit vector based on input text."""
         # Use sha256 to seed generator
         hasher = hashlib.sha256(text.encode("utf-8"))

@@ -1,3 +1,4 @@
+from tracenest import logger
 from pydantic_settings import BaseSettings
 from typing import Optional
 

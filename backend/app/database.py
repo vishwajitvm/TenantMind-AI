@@ -5,8 +5,7 @@ from qdrant_client import QdrantClient
 from qdrant_client.http import models as qmodels
 from minio import Minio
 from app.config import settings
-import logging
-logger = logging.getLogger(__name__)
+from tracenest import logger
 import re
 
 # Context variable to hold current tenant slug
@@ -14,6 +13,7 @@ tenant_context: ContextVar[str] = ContextVar("tenant_context", default="default"
 
 @traceable
 def get_tenant_slug() -> str:
+    logger.debug(f"Entering get_tenant_slug")
     """Returns the current tenant slug, sanitized for database/bucket naming."""
     slug = tenant_context.get()
     # Sanitize: alphanumeric and hyphens/underscores only
@@ -25,6 +25,7 @@ _mongo_client: AsyncIOMotorClient = None
 
 @traceable
 def get_mongo_client() -> AsyncIOMotorClient:
+    logger.debug(f"Entering get_mongo_client")
     global _mongo_client
     if _mongo_client is None:
         uri = settings.MONGODB_ATLAS_URI or "mongodb://localhost:27017"
@@ -34,6 +35,7 @@ def get_mongo_client() -> AsyncIOMotorClient:
 
 @traceable
 def get_db():
+    logger.debug(f"Entering get_db")
     client = get_mongo_client()
     slug = get_tenant_slug()
     db_name = f"org_{slug.replace('-', '_')}"
@@ -44,6 +46,7 @@ _minio_client: Minio = None
 
 @traceable
 def get_minio_client() -> Minio:
+    logger.debug(f"Entering get_minio_client")
     global _minio_client
     if _minio_client is None:
         # MinIO endpoint should not start with http:// or https:// for Minio client initialization
@@ -59,6 +62,7 @@ def get_minio_client() -> Minio:
 
 @traceable
 def ensure_minio_bucket() -> str:
+    logger.debug(f"Entering ensure_minio_bucket")
     client = get_minio_client()
     slug = get_tenant_slug()
     # MinIO bucket names must follow DNS rules: only lowercase letters, numbers, and hyphens.
@@ -77,6 +81,7 @@ _qdrant_client: QdrantClient = None
 
 @traceable
 def get_qdrant_client() -> QdrantClient:
+    logger.debug(f"Entering get_qdrant_client")
     global _qdrant_client
     if _qdrant_client is None:
         _qdrant_client = QdrantClient(url=settings.QDRANT_URL)
@@ -85,6 +90,7 @@ def get_qdrant_client() -> QdrantClient:
 
 @traceable
 def ensure_qdrant_collection(vector_size: int = 1536, distance_metric: str = "Cosine") -> str:
+    logger.debug(f"Entering ensure_qdrant_collection")
     client = get_qdrant_client()
     slug = get_tenant_slug()
     collection_name = f"org_{slug.replace('-', '_')}_vectors"

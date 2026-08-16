@@ -1,3 +1,4 @@
+from tracenest import logger
 from fastapi import APIRouter, HTTPException, Query, status
 from pydantic import BaseModel
 from app.database import get_db, get_tenant_slug
@@ -32,6 +33,7 @@ async def list_approvals(
 
 @router.post("/{approval_id}/action")
 async def review_approval(approval_id: str, payload: ApprovalActionRequest):
+    logger.debug(f"Entering review_approval")
     """Approves or rejects a pending tool call request."""
     slug = get_tenant_slug()
     db = get_db()
@@ -85,11 +87,13 @@ async def review_approval(approval_id: str, payload: ApprovalActionRequest):
 
 @router.post("/{approval_id}/approve")
 async def approve_approval(approval_id: str, reviewed_by: str = "admin"):
+    logger.debug(f"Entering approve_approval")
     """Approves a pending tool call request."""
     return await review_approval(approval_id, ApprovalActionRequest(action="approve", reviewed_by=reviewed_by))
 
 @router.post("/{approval_id}/reject")
 async def reject_approval(approval_id: str, reviewed_by: str = "admin"):
+    logger.debug(f"Entering reject_approval")
     """Rejects a pending tool call request."""
     return await review_approval(approval_id, ApprovalActionRequest(action="reject", reviewed_by=reviewed_by))
 

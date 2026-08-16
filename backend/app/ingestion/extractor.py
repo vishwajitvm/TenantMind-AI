@@ -8,8 +8,7 @@ from typing import List, Dict, Any, Tuple
 from app.gateways.embedding_gateway import EmbeddingGateway
 from app.database import ensure_qdrant_collection, get_qdrant_client, get_tenant_slug
 from qdrant_client.http import models as qmodels
-import logging
-logger = logging.getLogger(__name__)
+from tracenest import logger
 
 # Regex for common secrets
 SECRET_PATTERNS = {
@@ -35,6 +34,7 @@ INJECTION_KEYWORDS = [
 class DocumentExtractor:
     @staticmethod
     def scan_for_secrets(text: str) -> List[str]:
+        logger.debug(f"Entering scan_for_secrets")
         """Scans text for secrets using regex patterns."""
         found = []
         for name, pattern in SECRET_PATTERNS.items():
@@ -44,12 +44,14 @@ class DocumentExtractor:
 
     @staticmethod
     def scan_for_injections(text: str) -> bool:
+        logger.debug(f"Entering scan_for_injections")
         """Scans text for common LLM prompt injection attempts."""
         text_lower = text.lower()
         return any(keyword in text_lower for keyword in INJECTION_KEYWORDS)
 
     @staticmethod
     def parse_docx(file_bytes: bytes) -> str:
+        logger.debug(f"Entering parse_docx")
         """Parses DOCX text using built-in zipfile to read word/document.xml (no external dependencies)."""
         try:
             with zipfile.ZipFile(io.BytesIO(file_bytes)) as docx:
@@ -63,6 +65,7 @@ class DocumentExtractor:
 
     @staticmethod
     def parse_pdf(file_bytes: bytes) -> str:
+        logger.debug(f"Entering parse_pdf")
         """Parses PDF bytes. Tries to use pypdf if available, otherwise falls back to basic string decoding."""
         try:
             import pypdf
@@ -84,6 +87,7 @@ class DocumentExtractor:
 
     @classmethod
     def parse_document(cls, filename: str, file_bytes: bytes) -> str:
+        logger.debug(f"Entering parse_document")
         """Dispatches file bytes to the correct parser based on file extension."""
         ext = filename.split(".")[-1].lower()
         
@@ -119,6 +123,7 @@ class DocumentExtractor:
 
     @staticmethod
     def chunk_text(text: str, chunk_size: int = 1000, overlap: int = 100) -> List[str]:
+        logger.debug(f"Entering chunk_text")
         """Chunks text using a sliding window method."""
         chunks = []
         start = 0

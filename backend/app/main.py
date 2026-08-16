@@ -4,8 +4,9 @@ from fastapi.responses import JSONResponse, HTMLResponse, PlainTextResponse
 from app.middleware import TenantMiddleware
 from app.api import chats, documents, approvals, audit_logs, models, health, organizations, rag, mcp, users
 from app.config import settings
-import logging
-logger = logging.getLogger(__name__)
+from tracenest import logger
+from tracenest.fastapi.middleware import TraceNestMiddleware
+from tracenest.ui.router import router as tracenest_router
 
 # Initialize FastAPI App
 app = FastAPI(
@@ -13,6 +14,10 @@ app = FastAPI(
     description="Multitenant AI Backend API with strict isolation, LLM fallback gateways, and MCP tool validation.",
     version="1.0.0"
 )
+
+# Setup TraceNest Middleware & UI
+app.add_middleware(TraceNestMiddleware)
+app.include_router(tracenest_router)
 
 # Configure CORS
 app.add_middleware(
@@ -29,6 +34,7 @@ app.add_middleware(TenantMiddleware)
 # Custom Exception Handlers for logging
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
+    logger.debug(f"Entering global_exception_handler")
     logger.error(f"Global unhandled exception on {request.method} {request.url.path}: {str(exc)}", exc_info=True)
     return JSONResponse(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -42,6 +48,7 @@ for router_module in [chats, documents, approvals, audit_logs, models, health, o
 
 @app.get("/")
 async def root():
+    logger.debug(f"Entering root")
     return {
         "message": "Welcome to TenantMind AI API Gateway",
         "version": "1.0.0",

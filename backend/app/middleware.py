@@ -8,14 +8,14 @@ from jose import jwt, JWTError
 import httpx
 from app.config import settings
 from app.database import tenant_context
-import logging
-logger = logging.getLogger(__name__)
+from tracenest import logger
 
 # Global cache for Keycloak public keys to avoid fetching on every request
 _jwks_cache = None
 _jwks_last_fetched = 0
 
 async def get_keycloak_jwks() -> dict:
+    logger.debug(f"Entering get_keycloak_jwks")
     global _jwks_cache, _jwks_last_fetched
     now = time.time()
     # Cache for 1 hour
@@ -37,6 +37,7 @@ from langsmith import traceable
 
 @traceable(reduce_fn=lambda r: {"tenant_slug": r.get("outputs") if r else None}, tags=["auth", "extraction"])
 def extract_tenant_from_token(token: str) -> str:
+    logger.debug(f"Entering extract_tenant_from_token")
     """Decodes token and retrieves tenant slug/org identifier."""
     try:
         # First try to get claims without verification to extract tenant info
@@ -64,6 +65,7 @@ def extract_tenant_from_token(token: str) -> str:
 
 @traceable(reduce_fn=lambda r: {"tenant_slug": r.get("outputs") if r else None}, tags=["auth", "validation"])
 async def validate_token_and_get_tenant(token: str) -> str:
+    logger.debug(f"Entering validate_token_and_get_tenant")
     """Validates Keycloak JWT and returns the tenant slug."""
     # For testing/dev, if verification fails or Keycloak is unreachable,
     # we fall back to unverified claims extraction to keep system running.
@@ -114,6 +116,7 @@ async def validate_token_and_get_tenant(token: str) -> str:
 
 class TenantMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
+        logger.debug(f"Entering dispatch")
         # Exclude public endpoints
         path = request.url.path
         if path in ["/health", "/docs", "/redoc", "/openapi.json", "/tracenest", "/tracenest/logs"] or path.startswith("/api/health"):

@@ -1,3 +1,4 @@
+from tracenest import logger
 from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel
 from app.database import get_mongo_client
@@ -11,6 +12,7 @@ class OrganizationCreate(BaseModel):
 
 @router.get("")
 async def list_organizations():
+    logger.debug(f"Entering list_organizations")
     """Lists all organizations in the platform database."""
     client = get_mongo_client()
     db = client["platform_db"]
@@ -23,6 +25,7 @@ async def list_organizations():
 
 @router.post("", status_code=status.HTTP_201_CREATED)
 async def create_organization(payload: OrganizationCreate):
+    logger.debug(f"Entering create_organization")
     """Creates a new organization in the platform database."""
     client = get_mongo_client()
     db = client["platform_db"]
